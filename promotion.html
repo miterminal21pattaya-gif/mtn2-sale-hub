@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promotion Search</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    padding:15px;
+    background:#f5f5f5;
+}
+
+h2{
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    margin-bottom:15px;
+}
+
+.card{
+    background:white;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.name{
+    font-weight:bold;
+    margin-bottom:5px;
+}
+
+.price{
+    color:red;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<h2>🔍 ค้นหาโปรโมชั่น</h2>
+
+<input type="text" id="search" placeholder="ค้นหาชื่อสินค้า หรือ รหัสสินค้า">
+
+<div id="result"></div>
+
+<script>
+const csvUrl =
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vSdfmzi4Tzq0Etlc1p6o-2ltMPv20gYbf9mAQbd0diufioTm-XcD61xwITT37aZepJkBE5JV5xCcci7/pub?gid=1687344879&single=true&output=csv';
+
+let products=[];
+
+fetch(csvUrl)
+.then(res=>res.text())
+.then(text=>{
+
+    const rows=text.split('\n').map(r=>r.split(','));
+
+    products=rows.slice(2);
+
+    render(products);
+});
+
+function render(data){
+
+    let html='';
+
+    data.forEach(row=>{
+
+        html+=`
+        <div class="card">
+            <div class="name">${row[1]||''}</div>
+            <div>รหัส: ${row[0]||''}</div>
+            <div>สถานะ: ${row[2]||''}</div>
+            <div>ราคาเดิม: ${row[3]||''}</div>
+            <div class="price">ราคาใหม่: ${row[4]||''}</div>
+        </div>
+        `;
+    });
+
+    document.getElementById('result').innerHTML=html;
+}
+
+document.getElementById('search').addEventListener('keyup',e=>{
+
+    const q=e.target.value.toLowerCase();
+
+    const filtered=products.filter(row=>
+
+        (row[0]||'').toLowerCase().includes(q) ||
+        (row[1]||'').toLowerCase().includes(q)
+    );
+
+    render(filtered);
+});
+</script>
+
+</body>
+</html>
