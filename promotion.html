@@ -62,9 +62,11 @@ fetch(csvUrl)
 .then(res=>res.text())
 .then(text=>{
 
-    const rows=text.split('\n').map(r=>r.split(','));
+    const rows = text
+        .split('\n')
+        .map(r => r.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g));
 
-    products=rows.slice(2);
+    products = rows.slice(2);
 
     render(products);
 });
@@ -80,8 +82,8 @@ function render(data){
             <div class="name">${row[1]||''}</div>
             <div>รหัส: ${row[0]||''}</div>
             <div>สถานะ: ${row[2]||''}</div>
-            <div>ราคาเดิม: ${row.join(' | ')}</div>
-            <div class="price">ราคาใหม่: ${row[4]||''}</div>
+            <div>ราคาเดิม: ${row[3]?.replaceAll('"','') || ''}</div>
+            <div class="price">ราคาใหม่: ${row[4]?.replaceAll('"','') || ''}</div>
         </div>
         `;
     });
