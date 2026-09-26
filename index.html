@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Stock MTN2</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ff7a00">
+<style>
+html,body{margin:0;width:100%;height:100%;background:#000}
+iframe{border:0;width:100%;height:100%;display:block}
+</style>
+</head>
+<body>
+<iframe src="https://mtn2-sale-hub.vercel.app/" allow="clipboard-read; clipboard-write"></iframe>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js"));
+}
+</script>
+</body>
+</html>
