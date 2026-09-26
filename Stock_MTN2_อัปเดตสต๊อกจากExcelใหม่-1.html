@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Stock MTN2</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#000;color:#f5f5f5;font-family:Arial,sans-serif}
+.wrap{max-width:800px;margin:auto;padding:12px}.card{background:#111;border:1px solid #2a2a2a;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 4px 18px #0008}
+h1{font-size:23px;margin:0 0 2px}.sub,.small{font-size:13px;color:#aaa}
+.brandHeader{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.cloudBox{margin-top:10px;padding:10px 12px;border:1px solid #3a3a3a;border-radius:12px;background:#151515}.cloudTitle{font-weight:800;color:#ff9800}.cloudBox .row{display:flex;gap:8px}.cloudBox input{min-width:0;width:50%;margin:0}
+.brandIcon{width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+background:linear-gradient(135deg,#ff9800,#ff5a00);color:#000;font-size:12px;font-weight:900;letter-spacing:.5px;
+box-shadow:0 6px 16px #0002}
+.brandSub{font-size:13px;color:#aaa}
+.productVisual{height:82px;padding:12px 14px;display:flex;align-items:center;gap:13px;
+background:linear-gradient(135deg,#1a1a1a,#111);border-bottom:1px solid #333}
+.categoryIcon{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+font-size:30px;background:#1d1d1d;border:1px solid #333;box-shadow:0 4px 12px #0008}
+.categoryText{min-width:0}.categoryLabel{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#ff9800;font-weight:800}
+
+input[type=file],input[type=text],button{width:100%;min-height:48px;border-radius:12px;font-size:16px}
+input[type=file],input[type=text]{border:1px solid #444;padding:9px;background:#181818;color:#fff}
+button{border:0;background:#ff7a00;color:#000;font-weight:800;padding:10px;margin-top:8px}button:disabled{background:#555;color:#aaa}
+button.secondary{background:#242424;color:#ff9800;border:1px solid #ff7a00}.verify{background:#ff7a00;color:#000;font-size:18px}
+#reader{width:100%;border-radius:14px;overflow:hidden;background:#050505;min-height:210px;border:2px solid #ff7a00}
+#reader video{width:100%!important;height:auto!important;max-height:420px;object-fit:cover;image-rendering:auto}
+#reader__dashboard_section{color:#fff!important}
+#reader__scan_region{width:100%!important}
+#reader__scan_region img{display:none!important}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#181818;border:1px solid #2f2f2f;border-radius:14px;padding:12px;text-align:center}
+.num{font-size:29px;font-weight:800}.label{font-size:12px;color:#aaa}
+.pending{background:#241a0d;border:1px solid #ff9800;border-radius:14px;padding:13px;margin-top:10px}
+.code{font-size:18px;font-weight:800;word-break:break-all}.ok{color:#ff9800}.bad{color:#b42318}.warn{color:#ffb020}
+#status{margin-top:10px;padding:10px;border-radius:10px;background:#181818;border:1px solid #2c2c2c;font-weight:700}
+.product{border:1px solid #333;border-radius:15px;margin-top:10px;overflow:hidden;scroll-margin-top:12px;transition:box-shadow .2s,transform .2s}.product.justScanned{box-shadow:0 0 0 3px #08744355,0 8px 24px #0002;transform:translateY(2px)}
+.productHead{padding:13px;background:#151515}.productName{font-size:17px;font-weight:800}
+.productStats{font-size:13px;margin-top:5px}.bar{height:8px;background:#333;border-radius:20px;overflow:hidden;margin-top:9px}.fill{height:100%;background:#ff7a00}
+.imei{padding:9px 13px;border-top:1px solid #292929;font-size:13px;display:flex;gap:8px;align-items:center;word-break:break-all}
+.resetStockBtn{
+  width:100%;min-height:42px;margin-top:8px;padding:9px 14px;
+  border-radius:10px;border:1px solid #ff6b00;background:#2a1510;
+  color:#ff9800;font-weight:800;font-size:14px;
+}
+.resetStockBtn:active{transform:scale(.98)}
+.imeiToggle{width:auto;min-height:36px;margin:8px 0 0;padding:7px 12px;font-size:13px;border-radius:10px;background:#242424;color:#ff9800;border:1px solid #ff7a00}
+
+.dot{width:9px;height:9px;border-radius:50%;background:#555;flex:none}.dot.done{background:#ff7a00}
+.hidden{display:none!important}.row{display:flex;gap:8px}.row>*{flex:1}
+</style>
+
+<style id="reset-button-fix">
+.resetRoundWrap{
+  width:100%;
+  display:block;
+  clear:both;
+  margin-top:8px;
+}
+.resetStockBtn{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:100% !important;
+  min-height:44px;
+  box-sizing:border-box;
+  margin:0 !important;
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #ff6b00;
+  background:#21150d;
+  color:#ff9800;
+  font-weight:800;
+  font-size:14px;
+  cursor:pointer;
+}
+@media (max-width:700px){
+  .resetStockBtn{font-size:13px;min-height:46px;}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<div class="brandHeader">
+  <div class="brandIcon">MTN2</div>
+  <div>
+    <h1>Stock MTN2</h1>
+    <div class="brandSub">ระบบตรวจนับสต๊อกสินค้า</div>
+  </div>
+</div>
+<div class="sub">รวมสินค้าและ IMEI ตามชื่อสินค้าเดียวกัน · 1 IMEI/Barcode = 1 ชิ้น · รองรับตัวพิมพ์เล็ก/ใหญ่</div><br>
+<input id="file" type="file" accept=".xlsx,.xls,.csv">
+<div id="fileStatus" class="small" style="margin-top:8px">ยังไม่ได้โหลด Excel</div>
+<div id="excelUpdateHint" class="small" style="margin-top:6px">📥 เลือก Excel ใหม่ได้ตลอด · ต้องใส่รหัสหัวหน้าเพื่อแทนที่สต๊อก Cloud ทุกเครื่อง</div>
+<div class="cloudBox">
+ <div class="cloudTitle">☁️ สต๊อกทีมออนไลน์</div>
+ <div class="row" style="margin-top:6px">
+  <input id="workerName" type="text" placeholder="ชื่อคนยิง เช่น A / บอล" autocomplete="off">
+  <input id="deviceName" type="text" placeholder="ชื่อเครื่อง เช่น มือถือ A" autocomplete="off">
+ </div>
+ <div id="cloudStatus" class="small" style="margin-top:6px">กำลังเชื่อมต่อฐานกลาง...</div>
+</div>
+</div>
+
+<div class="card">
+<div class="grid">
+<div class="stat"><div id="total" class="num">0</div><div class="label">สินค้าทั้งหมด (ชิ้น)</div></div>
+<div class="stat"><div id="scanned" class="num ok">0</div><div class="label">ยิงแล้ว</div></div>
+<div class="stat"><div id="remain" class="num warn">0</div><div class="label">เหลือ</div></div>
+<div class="stat"><div id="wrong" class="num bad">0</div><div class="label">ไม่ตรง/ซ้ำ</div></div>
+<div class="stat"><div id="demoTotal" class="num">0</div><div class="label">DEMO ทั้งหมด (ชิ้น)</div></div>
+<div class="stat"><div id="demoScanned" class="num ok">0</div><div class="label">DEMO ยิงแล้ว</div></div>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-top:0">🖨️ ยิง Barcode SN / IMEI ด้วยเครื่องสแกน</h3>
+<div class="small">🖨️ เครื่องสแกน USB / Bluetooth: ยิง → เข้าสต๊อกอัตโนมัติ</div><div class="small" style="color:#ff9800;margin-top:6px">🔒 ระบบรับรหัสจากเครื่องสแกนเท่านั้น และตรวจสอบกับ SN/IMEI ในสต๊อก Cloud</div>
+<div class="small" style="margin-top:10px">ยิงจากเครื่องสแกน หรือกรอก Barcode เอง</div>
+<div class="row" style="margin-top:6px">
+<input id="manual" type="text" placeholder="Barcode / IMEI">
+<button onclick="setManual()" style="width:110px;margin:0">รับรหัส</button>
+</div>
+<div id="status">โหลด Excel ก่อน แล้วจึงเริ่มยิง</div>
+<div class="row" style="margin-top:8px">
+ <button class="secondary" onclick="saveData()">💾 เซฟข้อมูล</button>
+ <button class="secondary" onclick="loadSavedData()">↩️ กู้คืนข้อมูล</button>
+ <button class="secondary" onclick="exportExcel()">📤 Export Excel</button>
+<div class="resetRoundWrap"><button class="resetStockBtn" type="button" onclick="resetStockRound()">🧹 ล้างข้อมูลการยิง — เริ่มรอบใหม่</button></div>
+
+
+</div>
+<div class="small" style="margin-top:6px">ข้อมูลยิงถูกบันทึกบน Supabase อัตโนมัติ · ทุกเครื่องใช้ยอดเดียวกัน · รีเฟรชแล้วไม่หาย</div>
+</div>
+
+<div class="card">
+<h3 style="margin-top:0">📋 สินค้าตาม Excel</h3>
+<div class="small">ชื่อสินค้าเดียวกันจะอยู่ในช่องเดียว · SN/IMEI จะไม่แสดงจนกด “ดู SN / IMEI” เพื่อลดการหน่วง</div>
+<div id="products"></div>
+</div>
+
+<div class="card">
+<h3 style="margin-top:0">⚠️ ประวัติที่ตรวจสอบล่าสุด</h3>
+<div id="resultCount" class="small">0 รายการ</div>
+<div id="log" style="margin-top:8px"></div>
+<button class="secondary" onclick="resetScans()">ล้างผลการตรวจสอบ</button>
+</div>
+
+</div>
+
+<script>
+// =============================
+// Supabase Cloud - Stock MTN2
+// =============================
+// 🔐 PIN สำหรับผู้มีสิทธิ์ล้างรอบ (เปลี่ยนเลขนี้ได้)
+const RESET_PIN='2580';
+const SUPABASE_URL='https://subsnzfhmbucqohfxhpx.supabase.co';
+const SUPABASE_KEY='sb_publishable_IckvVo6ybWAg4OfQMIFjAg_3HsMOx0x';
+const cloud=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let cloudSyncTimer=null;
+let cloudBusy=false;
+function worker(){return (document.getElementById('workerName')?.value||localStorage.getItem('mtn2_worker')||'ไม่ระบุคน').trim()||'ไม่ระบุคน'}
+function device(){return (document.getElementById('deviceName')?.value||localStorage.getItem('mtn2_device')||'ไม่ระบุเครื่อง').trim()||'ไม่ระบุเครื่อง'}
+function saveIdentity(){localStorage.setItem('mtn2_worker',worker());localStorage.setItem('mtn2_device',device())}
+
+async function cloudCount(){
+ const {count,error}=await cloud.from('stock_items').select('id',{count:'exact',head:true});
+ if(error)throw error; return count||0;
+}
+
+function buildLocalFromCloud(rows){
+ const groups=new Map();
+ for(const r of rows){
+   const name=String(r.product_name||'').trim();
+   if(!groups.has(name))groups.set(name,{name,qty:0,imeis:[],showImeis:false,latestScannedAt:null});
+   const p=groups.get(name);
+   p.imeis.push(String(r.code));
+   p.qty=p.imeis.length;
+   if(r.scanned && r.scanned_at){
+     const t=new Date(r.scanned_at).getTime();
+     if(!p.latestScannedAt || t>p.latestScannedAt)p.latestScannedAt=t;
+   }
+   barcodeMap.set(key(r.code),{code:String(r.code),product:p,cloudRow:r});
+ }
+ products=[...groups.values()];
+ scannedSet=new Set(rows.filter(r=>r.scanned).map(r=>key(r.code)));
+
+ // สินค้าที่เพิ่งยิงล่าสุดจะอยู่บนสุดเสมอ แม้มีการซิงก์จาก Cloud ทุก 2 วินาที
+ let latestProduct=null;
+ for(const p of products){
+   if(p.latestScannedAt && (!latestProduct || p.latestScannedAt>latestProduct.latestScannedAt)) latestProduct=p;
+ }
+ if(latestProduct){
+   products.splice(products.indexOf(latestProduct),1);
+   products.unshift(latestProduct);
+ }
+
+ const total=rows.length;
+ $('total').textContent=total; $('scanned').textContent=scannedSet.size; $('remain').textContent=Math.max(0,total-scannedSet.size);
+ updateDemoCount(); renderProducts();
+ $('fileStatus').innerHTML=`<b>☁️ ฐานกลาง:</b> ${products.length} กลุ่มสินค้า · ${total} ชิ้น`;
+}
+
+async function syncFromCloud(silent=true){
+ if(cloudBusy)return;
+ try{
+  const {data,error}=await cloud.from('stock_items').select('id,product_name,code,is_demo,scanned,scanned_at,scanned_by,device_name').order('id');
+  if(error)throw error;
+  if(data?.length){
+    buildLocalFromCloud(data);
+    if(!silent)$('status').innerHTML='<span class="ok">☁️ ซิงก์ข้อมูลกลางแล้ว</span>';
+  }
+  $('cloudStatus').innerHTML=`🟢 ออนไลน์ · ${data?.length||0} ชิ้นในฐานกลาง`;
+ }catch(e){
+  $('cloudStatus').innerHTML=`<span class="bad">🔴 Cloud มีปัญหา: ${escapeHtml(e.message||'เชื่อมต่อไม่ได้')}</span>`;
+ }
+}
+
+async function importExcelToCloud(parsedProducts){
+ const rows=[];
+ for(const p of parsedProducts){
+  for(const code of p.imeis){
+   rows.push({
+     product_name:p.name,
+     code:String(code),
+     is_demo:/\bDEMO\b/i.test(p.name),
+     scanned:false,
+     scanned_at:null,
+     scanned_by:null,
+     device_name:null
+   });
+  }
+ }
+ if(!rows.length)return;
+
+ const pin=prompt('🔐 อัปเดตสต๊อกใหม่\n\nกรุณาใส่รหัสหัวหน้าเพื่อแทนที่สต๊อกใน Cloud');
+ if(pin===null)throw new Error('ยกเลิกการอัปเดตสต๊อก');
+ if(pin!==RESET_PIN)throw new Error('รหัสหัวหน้าไม่ถูกต้อง');
+
+ const ok=confirm(
+   '⚠️ ยืนยันอัปเดตสต๊อกใหม่?\n\n' +
+   'ไฟล์: '+currentFileName+'\n' +
+   'จำนวน: '+rows.length+' ชิ้น\n\n' +
+   'สต๊อกชุดเก่าของทุกเครื่องจะถูกแทนที่\n' +
+   'และสถานะยิงแล้ว / DEMO / ยิงซ้ำ จะเริ่มใหม่เป็น 0'
+ );
+ if(!ok)throw new Error('ยกเลิกการอัปเดตสต๊อก');
+
+ cloudBusy=true;
+ try{
+   $('status').textContent='☁️ กำลังแทนที่สต๊อกใน Cloud...';
+
+   // Use a security-definer RPC so every device can safely replace the
+   // shared stock without needing direct DELETE/INSERT privileges.
+   const {data,error}=await cloud.rpc('replace_stock_from_json',{p_rows:rows});
+   if(error)throw error;
+
+   scannedSet.clear();
+   logs=[];
+   localStorage.removeItem('stockScannerV8Save');
+   localStorage.removeItem('stockMtn2Scanned');
+   lastMovedProduct=null;
+
+   await syncFromCloud(false);
+   $('status').innerHTML='<span class="ok">✅ อัปเดตสต๊อกใหม่เรียบร้อย · '+rows.length+' ชิ้น</span>';
+   speakThai('อัปเดตสต๊อกเรียบร้อย');
+ }finally{
+   cloudBusy=false;
+ }
+}
+
+async function cloudScan(code){
+ const {data,error}=await cloud.rpc('scan_stock',{p_code:code,p_device_name:device(),p_scanned_by:worker()});
+ if(error)throw error;
+ return data;
+}
+
+async function startCloud(){
+ try{
+  document.getElementById('workerName').value=localStorage.getItem('mtn2_worker')||'';
+  document.getElementById('deviceName').value=localStorage.getItem('mtn2_device')||'';
+  document.getElementById('workerName').addEventListener('change',saveIdentity);
+  document.getElementById('deviceName').addEventListener('change',saveIdentity);
+  await syncFromCloud(true);
+  cloudSyncTimer=setInterval(()=>syncFromCloud(true),2000);
+ }catch(e){$('cloudStatus').innerHTML='<span class="bad">🔴 เชื่อมต่อ Cloud ไม่สำเร็จ</span>'}
+}
+window.addEventListener('DOMContentLoaded',startCloud);
+
+let products=[], barcodeMap=new Map(), scannedSet=new Set(), logs=[], currentFileName='', savedAt='';
+const $=id=>document.getElementById(id), norm=v=>String(v??'').trim(), key=v=>norm(v).toUpperCase();
+
+$('file').addEventListener('change',async e=>{
+ const file=e.target.files[0];if(!file)return; currentFileName=file.name;
+ try{
+  const data=await file.arrayBuffer(), wb=XLSX.read(data,{type:'array'}), ws=wb.Sheets[wb.SheetNames[0]];
+  const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  const parsed=[]; let current=null;
+  for(let i=0;i<raw.length;i++){
+    const a=norm(raw[i][0]), b=norm(raw[i][1]);
+    if(b){current={name:b,qty:0,imeis:[],row:i+1,showImeis:false};parsed.push(current)}
+    if(a&&current)current.imeis.push(a);
+  }
+  for(const p of parsed)p.qty=p.imeis.length;
+  if(!parsed.length){$('fileStatus').textContent='ไม่พบข้อมูลสินค้า';return}
+
+  // แสดงไฟล์ที่เลือกทันที
+  products=parsed; barcodeMap.clear(); scannedSet.clear(); logs=[];
+  for(const p of products)for(const code of p.imeis)barcodeMap.set(key(code),{code,product:p});
+  const total=products.reduce((s,p)=>s+p.imeis.length,0);
+  $('total').textContent=total;$('scanned').textContent=0;$('remain').textContent=total;$('wrong').textContent=0;
+  $('fileStatus').innerHTML=`<b>ไฟล์ใหม่:</b> ${escapeHtml(file.name)} · ${parsed.length} กลุ่ม · ${total} ชิ้น · รอยืนยันอัปเดต Cloud`;
+  renderProducts();renderLog();
+
+  await importExcelToCloud(parsed);
+  currentFileName=file.name;
+ }catch(err){$('fileStatus').textContent='อ่าน/นำเข้า Excel ไม่สำเร็จ: '+err.message}
+});
+
+function saveData(){
+  if(!products.length)return;
+  const data={
+    version:1,
+    fileName:currentFileName,
+    products:products.map(p=>({name:p.name,imeis:[...p.imeis]})),
+    scanned:[...scannedSet],
+    logs:logs.slice(0,300),
+    savedAt:new Date().toISOString()
+  };
+  try{
+    localStorage.setItem('stockScannerV8Save',JSON.stringify(data));
+    savedAt=data.savedAt;
+  }catch(e){
+    console.warn('saveData failed',e);
+  }
+}
+
+function restoreSavedData(){
+  try{
+    const raw=localStorage.getItem('stockScannerV8Save');
+    if(!raw)return false;
+    const data=JSON.parse(raw);
+    if(!Array.isArray(data.products)||!data.products.length)return false;
+
+    products=data.products.map(p=>({
+      name:String(p.name||''),
+      qty:Array.isArray(p.imeis)?p.imeis.length:0,
+      imeis:Array.isArray(p.imeis)?p.imeis.map(norm):[]
+    }));
+
+    barcodeMap.clear();
+    for(const p of products){
+      for(const code of p.imeis){
+        barcodeMap.set(key(code),{code,product:p});
+      }
+    }
+
+    scannedSet=new Set((data.scanned||[]).map(key));
+    scannedSet=new Set([...scannedSet].filter(k=>barcodeMap.has(k)));
+    logs=Array.isArray(data.logs)?data.logs:[];
+    currentFileName=data.fileName||'';
+    savedAt=data.savedAt||'';
+
+    const total=products.reduce((s,p)=>s+p.imeis.length,0);
+    $('total').textContent=total;
+    $('scanned').textContent=scannedSet.size;
+    $('remain').textContent=Math.max(0,total-scannedSet.size);
+    $('wrong').textContent=logs.filter(x=>x.status==='❌ ไม่ตรง'||x.status==='⚠️ ยิงซ้ำ').length;
+    $('fileStatus').innerHTML=`<b>กู้คืนแล้ว:</b> ${escapeHtml(currentFileName||'ข้อมูลที่เซฟไว้')} · ${products.length} กลุ่มสินค้า · ${total} ชิ้น`;
+    renderProducts();
+    renderLog();
+    updateDemoCount();
+    $('status').innerHTML=`<span class="ok">🔄 กู้คืนข้อมูลแล้ว — ยิงไปแล้ว ${scannedSet.size} ชิ้น</span>`;
+    return true;
+  }catch(e){
+    console.warn('restoreSavedData failed',e);
+    return false;
+  }
+}
+
+function loadSavedData(){
+  if(restoreSavedData())return;
+  $('status').textContent='ยังไม่มีข้อมูลที่เซฟไว้';
+}
+
+
+function exportExcel(){
+  if(!products.length){
+    $('status').textContent='กรุณาโหลด Excel ก่อน Export';
+    return;
+  }
+
+  const rows=[];
+  for(const p of products){
+    for(const imei of p.imeis){
+      const scanned=scannedSet.has(key(imei));
+      rows.push({
+        'ชื่อสินค้า':p.name,
+        'IMEI / Barcode':imei,
+        'สถานะ':scanned?'ยิงแล้ว':'ยังไม่ยิง'
+      });
+    }
+  }
+
+  const summary=products.map(p=>{
+    const done=p.imeis.filter(x=>scannedSet.has(key(x))).length;
+    return {
+      'ชื่อสินค้า':p.name,
+      'ทั้งหมด (ชิ้น)':p.imeis.length,
+      'ยิงแล้ว (ชิ้น)':done,
+      'เหลือ (ชิ้น)':Math.max(0,p.imeis.length-done)
+    };
+  });
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'รายการ IMEI');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),'สรุปสินค้า');
+
+  const stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  XLSX.writeFile(wb,`Stock_Result_${stamp}.xlsx`);
+  $('status').innerHTML='<span class="ok">📤 Export Excel เรียบร้อยแล้ว</span>';
+}
+
+async function verifyPending(inputCode){
+ const code=norm(inputCode);if(!code)return;
+ try{
+  saveIdentity();
+  $('status').textContent='☁️ กำลังตรวจสอบกับฐานกลาง...';
+  const result=await cloudScan(code);
+
+  if(result?.status==='success'){
+    scannedSet.add(key(result.code||code));
+    logs.unshift({code:result.code||code,product:result.product_name||'ไม่ทราบสินค้า',status:'✅ ตรวจสอบแล้ว',by:worker()});
+    $('scanned').textContent=scannedSet.size;
+    $('remain').textContent=Math.max(0,Number($('total').textContent)-scannedSet.size);
+    $('status').innerHTML=`<span class="ok">✅ สแกนเรียบร้อย — ยิงเสร็จแล้ว</span><br><b>${escapeHtml(result.product_name||'')}</b><br><span class="small">SN: ${escapeHtml(result.code||code)}</span>`;
+    speakDone(); beep(1450,220); setTimeout(()=>beep(1900,180),250);
+    renderLog(); updateDemoCount();
+    await syncFromCloud(true);
+    const top=products.find(p=>key(p.name)===key(result.product_name||''));
+    if(top){
+      moveProductToTop(top);
+      renderProducts();
+      scrollProductToTop(top);
+    }
+    return;
+  }
+
+  if(result?.status==='duplicate'){
+    $('wrong').textContent=+$('wrong').textContent+1;
+    logs.unshift({code,product:result.product_name||'',status:'⚠️ ยิงซ้ำ',by:worker()});
+    $('status').innerHTML=`<span class="warn">⚠️ ยิงซ้ำ</span><br>${escapeHtml(result.product_name||'')}<br><span class="small">ยิงโดย ${escapeHtml(result.scanned_by||'ไม่ระบุคน')} · ${escapeHtml(result.device_name||'')}</span>`;
+    speakThai('ยิงซ้ำ'); beep(320,240); renderLog(); return;
+  }
+
+  $('wrong').textContent=+$('wrong').textContent+1;
+  logs.unshift({code,product:'ไม่พบใน Excel',status:'❌ ไม่ตรง',by:worker()});
+  $('status').innerHTML=`<span class="bad">❌ ไม่พบ SN</span><br><span class="small">${escapeHtml(code)}</span>`;
+  speakThai('ไม่พบ SN'); beep(260,320); renderLog();
+ }catch(e){
+  $('status').innerHTML=`<span class="bad">❌ Cloud ขัดข้อง</span><br><span class="small">${escapeHtml(e.message||'')}</span>`;
+ }
+}
+
+
+function moveProductToTop(product){
+  const index=products.indexOf(product);
+  if(index<=0)return;
+  products.splice(index,1);
+  products.unshift(product);
+}
+
+function scrollProductToTop(product){
+  if(!product)return;
+  const index=products.indexOf(product);
+  const el=document.getElementById('product-'+index);
+  if(!el)return;
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      el.scrollIntoView({behavior:'smooth',block:'start'});
+      el.classList.add('justScanned');
+      setTimeout(()=>el.classList.remove('justScanned'),1400);
+    });
+  });
+}
+
+
+function updateDemoCount(){
+  let total=0, scanned=0;
+  for(const p of products){
+    if(/\bDEMO\b/i.test(p.name)){
+      total += p.imeis.length;
+      scanned += p.imeis.filter(x=>scannedSet.has(key(x))).length;
+    }
+  }
+  $('demoTotal').textContent=total;
+  $('demoScanned').textContent=scanned;
+}
+
+
+function categoryVisual(name){
+  const n=String(name||'').toLowerCase();
+  if(/watch|band/.test(n)) return ['⌚','SMART WATCH','นาฬิกาอัจฉริยะ'];
+  if(/phone|redmi note|xiaomi 1[0-9]|poco|iphone|smartphone/.test(n)) return ['📱','SMARTPHONE','สมาร์ทโฟน'];
+  if(/pad|tablet/.test(n)) return ['📲','TABLET','แท็บเล็ต'];
+  if(/ear|buds|headphone|headset/.test(n)) return ['🎧','AUDIO','หูฟัง / เสียง'];
+  if(/power bank|battery|charger|adapter|cable/.test(n)) return ['🔋','POWER','พลังงาน / อุปกรณ์ชาร์จ'];
+  if(/groom|shav|trimmer|hair|dryer/.test(n)) return ['✂️','GROOMING','อุปกรณ์ดูแลตัวเอง'];
+  if(/vacuum|robot|air purifier|clean/.test(n)) return ['🧹','HOME','เครื่องใช้ในบ้าน'];
+  if(/camera|cam/.test(n)) return ['📷','CAMERA','กล้อง'];
+  if(/router|wifi|ax[0-9]/.test(n)) return ['📡','NETWORK','เครือข่าย'];
+  if(/\bdemo\b/.test(n)) return ['DEMO','DEMO','เครื่องสาธิต'];
+  return ['📦','PRODUCT','สินค้า'];
+}
+
+function toggleImeis(index){
+ const p=products[index];
+ if(!p)return;
+ p.showImeis=!p.showImeis;
+ renderProducts();
+}
+
+
+async function resetStockRound(){
+  const pin=prompt('🔐 สิทธิ์หัวหน้า\n\nกรุณาใส่รหัสเพื่อเริ่มรอบใหม่');
+  if(pin===null)return;
+  if(pin!==RESET_PIN){
+    speakThai('รหัสไม่ถูกต้อง');
+    alert('❌ รหัสไม่ถูกต้อง\n\nคุณไม่มีสิทธิ์ล้างรอบนี้');
+    return;
+  }
+
+  const ok=confirm('⚠️ ยืนยันล้างข้อมูลการยิงทั้งทีม?\n\nยิงแล้ว / DEMO / ยิงซ้ำ / ไม่พบ SN จะถูกรีเซ็ตเป็น 0\n\nสินค้าและ SN/IMEI จะไม่ถูกลบ');
+  if(!ok)return;
+
+  const status=$('status');
+  if(status)status.textContent='🧹 กำลังล้างข้อมูลการยิง...';
+
+  try{
+    const {data,error}=await cloud.rpc('reset_stock_round');
+    if(error)throw error;
+
+    // ล้างสถานะฝั่งหน้าเว็บด้วย แล้วดึงข้อมูลกลางใหม่
+    scannedSet.clear();
+    logs=[];
+    // สำคัญ: ล้างข้อมูลสำรองในเครื่องด้วย ไม่เช่นนั้นค่า "ยิงซ้ำ/ไม่ตรง"
+    // จากรอบเก่าจะถูกกู้กลับหลังรีเฟรช
+    localStorage.removeItem('stockScannerV8Save');
+    localStorage.removeItem('stockMtn2Scanned');
+    $('scanned').textContent='0';
+    $('remain').textContent=$('total').textContent||'0';
+    $('wrong').textContent='0';
+    lastMovedProduct=null;
+
+    window.location.reload();
+    if(status)status.textContent='✅ ล้างข้อมูลเรียบร้อย — พร้อมเริ่มรอบใหม่';
+    speakThai('ล้างข้อมูลเรียบร้อย');
+  }catch(e){
+    console.error(e);
+    if(status)status.textContent='❌ ล้างข้อมูลไม่สำเร็จ: '+(e.message||e);
+    alert('ล้างข้อมูลไม่สำเร็จ\n\n'+(e.message||e)+'\n\nหากยังมีปัญหา กรุณาส่งข้อความ Error ล่าสุดมาให้ผม');
+  }
+}
+
+function renderProducts(){
+ $('products').innerHTML=products.map(p=>{
+   const done=p.imeis.filter(x=>scannedSet.has(key(x))).length;
+   const pct=p.qty?Math.min(100,done/p.qty*100):0;
+   const productIndex=products.indexOf(p);
+   const toggleText=p.showImeis?'🙈 ซ่อน SN / IMEI':'👁️ ดู SN / IMEI';
+
+   // ซ่อนจริง: ไม่สร้างรายการ SN/IMEI ลงใน DOM จนกว่าจะกดเปิด
+   const imeiHtml=p.showImeis
+     ? (p.imeis.length
+       ? p.imeis.map(x=>`<div class="imei"><span class="dot ${scannedSet.has(key(x))?'done':''}"></span><span class="imeiValue">${escapeHtml(x)}</span>${scannedSet.has(key(x))?'<span class="ok" style="margin-left:auto">✓</span>':''}</div>`).join('')
+       : '<div class="imei"><span class="small">ไม่มี IMEI/Barcode ในข้อมูล</span></div>')
+     : '';
+
+   const productId='product-'+productIndex;
+   return `<div class="product" id="${productId}">
+    <div class="productHead">
+      <div class="productName">${escapeHtml(p.name)}</div>
+      <div class="productStats"><b>${done}</b>/${p.qty} ชิ้น · เหลือ ${Math.max(0,p.qty-done)} ชิ้น</div>
+      <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+      <button class="imeiToggle" onclick="toggleImeis(${productIndex})">${toggleText}</button>
+    </div>
+    ${imeiHtml}
+   </div>`;
+ }).join('');
+}
+
+function renderLog(){
+ $('resultCount').textContent=`${logs.length} รายการ`;
+ $('log').innerHTML=logs.slice(0,100).map((x,i)=>`
+  <div style="padding:9px;border-bottom:1px solid #eee">
+   <b>${i+1}. ${escapeHtml(x.product)}</b><br>
+   <span class="small">${escapeHtml(x.code)}</span>
+   <span class="${x.status.includes('ตรวจสอบแล้ว')?'ok':x.status.includes('ซ้ำ')?'warn':'bad'}" style="float:right">${escapeHtml(x.status)}</span>
+  </div>`).join('');
+}
+
+function resetScans(){
+ $('status').innerHTML='<span class="warn">⚠️ ระบบหลายเครื่อง: การล้างผลต้องทำจากฐานกลาง</span>';
+}
+
+$('manual').addEventListener('keydown',e=>{if(e.key==='Enter')setManual()});
+window.addEventListener('beforeunload',()=>{if(products.length)saveData()});
+window.addEventListener('pagehide',()=>{if(products.length)saveData()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&products.length)saveData()});
+window.addEventListener('load',()=>{setTimeout(()=>restoreSavedData(),150)});
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+function speakThai(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='th-TH'; u.volume=1.0; u.rate=1.0; u.pitch=1.0;
+    const voices=window.speechSynthesis.getVoices();
+    const th=voices.find(v=>(v.lang||'').toLowerCase().startsWith('th'));
+    if(th) u.voice=th;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function speakDone(){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+
+    const u=new SpeechSynthesisUtterance('ยิงเสร็จแล้ว');
+    u.lang='th-TH';
+    u.volume=1.0;
+    u.rate=1.0;
+    u.pitch=1.0;
+
+    // พยายามเลือกเสียงภาษาไทยถ้ามีในเครื่อง
+    const voices=window.speechSynthesis.getVoices();
+    const th=voices.find(v=>(v.lang||'').toLowerCase().startsWith('th'));
+    if(th) u.voice=th;
+
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function beep(freq=1000,dur=180){
+  try{
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(!C)return;
+    const c=new C();
+    if(c.state==='suspended')c.resume();
+    const o=c.createOscillator(),g=c.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(freq,c.currentTime);
+    o.connect(g);g.connect(c.destination);
+    g.gain.setValueAtTime(.22,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur/1000);
+    o.start();
+    o.stop(c.currentTime+dur/1000);
+    setTimeout(()=>{try{c.close()}catch(e){}},dur+80);
+  }catch(e){}
+}
+</script>
+</body>
+</html>
